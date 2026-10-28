@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "abstickmen:item/blue_spawn_egg"
+  }
+}

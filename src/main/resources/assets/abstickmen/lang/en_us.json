@@ -1,0 +1,22 @@
+{
+  "entity.abstickmen.orange": "Orange",
+  "entity.abstickmen.red": "Red",
+  "entity.abstickmen.blue": "Blue",
+  "entity.abstickmen.green": "Green",
+  "entity.abstickmen.yellow": "Yellow",
+  "item.abstickmen.crayon": "Animator's Pencil",
+  "item.abstickmen.orange_spawn_egg": "Orange Spawn Egg",
+  "item.abstickmen.red_spawn_egg": "Red Spawn Egg",
+  "item.abstickmen.blue_spawn_egg": "Blue Spawn Egg",
+  "item.abstickmen.green_spawn_egg": "Green Spawn Egg",
+  "item.abstickmen.yellow_spawn_egg": "Yellow Spawn Egg",
+  "message.abstickmen.dessin": "✎ You draw your stick figure gang!",
+  "message.abstickmen.deja": "Your whole gang is already here!",
+  "message.abstickmen.gomme": "Eraser: your gang has been erased.",
+  "message.abstickmen.personne": "You have no stick figure to erase.",
+  "message.abstickmen.reste": "%s stays here.",
+  "message.abstickmen.suit": "%s follows you.",
+  "message.abstickmen.ami": "%s is now your friend!",
+  "message.abstickmen.efface": "%s was erased… Draw them again with the Animator's Pencil.",
+  "message.abstickmen.commande": "[%s: %s]"
+}

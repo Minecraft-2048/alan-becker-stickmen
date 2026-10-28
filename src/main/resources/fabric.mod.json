@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "id": "abstickmen",
+  "version": "${version}",
+  "name": "Alan Becker Stickmen",
+  "description": "Orange, Red, Blue, Green and Yellow, the stick figures of Alan Becker's animations, join you in Minecraft: they follow you, do flips and dances, fight monsters and mine ores for you. Orange has a hollow head, a command staff he uses when commands are enabled, and writes messages on your screen. Draw them with the Animator's Pencil (stick + coal + paper). Unofficial fan project.",
+  "authors": [
+    "pineapple"
+  ],
+  "contact": {
+    "homepage": "https://github.com/Minecraft-2048/alan-becker-stickmen",
+    "sources": "https://github.com/Minecraft-2048/alan-becker-stickmen",
+    "issues": "https://github.com/Minecraft-2048/alan-becker-stickmen/issues"
+  },
+  "license": "MIT",
+  "icon": "assets/abstickmen/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "com.pineapple.abstickmen.AlanBeckerStickmen"
+    ],
+    "client": [
+      "com.pineapple.abstickmen.client.StickmenClient"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=0.19.0",
+    "fabric-api": "*",
+    "minecraft": "~26.3",
+    "java": ">=25"
+  }
+}

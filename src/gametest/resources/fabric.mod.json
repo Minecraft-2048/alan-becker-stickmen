@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "id": "abstickmen-gametest",
+  "version": "1.0.0",
+  "name": "Alan Becker Stickmen (tests en jeu)",
+  "environment": "client",
+  "entrypoints": {
+    "fabric-client-gametest": [
+      "com.pineapple.abstickmen.gametest.StickmenTest",
+      "com.pineapple.abstickmen.gametest.PhotosTest"
+    ]
+  },
+  "depends": {
+    "abstickmen": "*"
+  }
+}

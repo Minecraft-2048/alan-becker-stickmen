@@ -1,0 +1,22 @@
+{
+  "entity.abstickmen.orange": "Orange",
+  "entity.abstickmen.red": "Rouge",
+  "entity.abstickmen.blue": "Bleu",
+  "entity.abstickmen.green": "Vert",
+  "entity.abstickmen.yellow": "Jaune",
+  "item.abstickmen.crayon": "Crayon d'animateur",
+  "item.abstickmen.orange_spawn_egg": "Œuf d'apparition d'Orange",
+  "item.abstickmen.red_spawn_egg": "Œuf d'apparition de Rouge",
+  "item.abstickmen.blue_spawn_egg": "Œuf d'apparition de Bleu",
+  "item.abstickmen.green_spawn_egg": "Œuf d'apparition de Vert",
+  "item.abstickmen.yellow_spawn_egg": "Œuf d'apparition de Jaune",
+  "message.abstickmen.dessin": "✎ Tu dessines ta bande de stickmen !",
+  "message.abstickmen.deja": "Toute ta bande est déjà là !",
+  "message.abstickmen.gomme": "Coup de gomme : ta bande est effacée.",
+  "message.abstickmen.personne": "Tu n'as aucun stickman à effacer.",
+  "message.abstickmen.reste": "%s reste ici.",
+  "message.abstickmen.suit": "%s te suit.",
+  "message.abstickmen.ami": "%s est maintenant ton ami !",
+  "message.abstickmen.efface": "%s a été effacé… Redessine-le avec le crayon d'animateur.",
+  "message.abstickmen.commande": "[%s : %s]"
+}
