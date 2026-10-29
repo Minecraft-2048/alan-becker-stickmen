@@ -4,6 +4,7 @@ import java.util.EnumMap;
 import java.util.Map;
 import java.util.function.Function;
 
+import com.pineapple.abstickmen.entity.Fleche;
 import com.pineapple.abstickmen.entity.Personnage;
 import com.pineapple.abstickmen.entity.Reglages;
 import com.pineapple.abstickmen.entity.Souvenirs;
@@ -40,6 +41,7 @@ public final class AlanBeckerStickmen implements ModInitializer {
     public static final Logger LOG = LoggerFactory.getLogger("Alan Becker Stickmen");
 
     public static Item CRAYON;
+    public static EntityType<Fleche> FLECHE;
     private static final Map<Personnage, EntityType<Stickman>> TYPES = new EnumMap<>(Personnage.class);
 
     public static Identifier id(String path) {
@@ -64,6 +66,16 @@ public final class AlanBeckerStickmen implements ModInitializer {
             FabricDefaultAttributeRegistry.register(type, Stickman.attributs());
             TYPES.put(p, type);
         }
+        // Leurs flèches : réglées comme celles du jeu
+        ResourceKey<EntityType<?>> cleFleche = ResourceKey.create(Registries.ENTITY_TYPE, id("fleche"));
+        FLECHE = Registry.register(BuiltInRegistries.ENTITY_TYPE, cleFleche,
+                EntityType.Builder.<Fleche>of(Fleche::new, MobCategory.MISC)
+                        .noLootTable()
+                        .sized(0.5f, 0.5f)
+                        .eyeHeight(0.13f)
+                        .clientTrackingRange(4)
+                        .updateInterval(20)
+                        .build(cleFleche));
 
         CRAYON = enregistrerObjet("crayon", CrayonItem::new, new Item.Properties().stacksTo(1).rarity(Rarity.UNCOMMON));
         for (Personnage p : Personnage.values()) {

@@ -326,6 +326,7 @@ public final class Animations {
                 q.torsion = -0.4f + 0.8f * frappe;
                 q.torse = 0.2f * frappe;
             }
+            case TIR_A_L_ARC -> tirALArc(q, t, d);
             case PIOCHE -> {
                 float elan = lisse(clamp(u / 0.5f));
                 float frappe = lisse(clamp((u - 0.5f) / 0.2f));
@@ -539,6 +540,29 @@ public final class Animations {
         q.coude[0] = 0.9f * w + 0.18f * (float) Math.sin(t * 2.2f) * tape;
         q.ecartBras[0] = 0.1f + 0.1f * (float) Math.sin(t * 1.7f) * tape;
         q.tete = -0.25f * w;
+    }
+
+    /**
+     * Tir à l'arc : l'arc dans la main gauche, bras tendu vers la cible ; la main droite tire la corde
+     * jusqu'à la joue, coude en arrière, et part en arrière quand la flèche est lâchée. Les deux bras
+     * restent à l'horizontale : leur écart les fait alors tourner à plat, de l'avant vers le côté puis
+     * vers l'arrière. L'orange plante son bâton à côté de lui le temps du tir.
+     */
+    private static void tirALArc(Pose q, float t, int d) {
+        float tension = lisse((t - 3) / 15f);
+        float lache = lisse((t - Stickman.LACHER) / 2f);
+        q.batonPlante = Math.min(lisse(t / 4f), lisse((d - t) / 4f));
+        q.batonLeve = 0;
+        q.epaule[1] = PI / 2;
+        q.ecartBras[1] = -0.25f;
+        q.coude[1] = 0.05f;
+        q.torsionCoude[1] = 0;
+        q.epaule[0] = PI / 2 - 0.15f * tension;
+        q.ecartBras[0] = 0.1f + 1.9f * tension + 0.35f * lache;
+        q.coude[0] = 2.4f * tension - 0.5f * lache;
+        q.torsionCoude[0] = PI / 2;
+        q.torse = -0.06f * tension;
+        q.tete = 0;
     }
 
     private static void garde(Pose q) {

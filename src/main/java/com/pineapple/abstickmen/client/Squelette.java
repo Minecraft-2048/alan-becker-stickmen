@@ -98,6 +98,12 @@ public final class Squelette {
         for (Vector3f pt : new Vector3f[]{hanche, cou, coudes[0], coudes[1], mains[0], mains[1], genoux[0], genoux[1], pieds[0], pieds[1]}) {
             bas = Math.min(bas, pt.y - EPAISSEUR / 2);
         }
+        // Planté dans le sol à sa gauche, le temps de tirer à l'arc
+        if (p.batonPlante > 0) {
+            batonBas.lerp(v.set(0.42f, bas, 0.02f), p.batonPlante);
+            batonHaut.lerp(v.set(0.42f, bas + BATON, 0.02f), p.batonPlante);
+            axeBaton.set(batonHaut).sub(batonBas).normalize();
+        }
         float yaw = (float) Math.toRadians(-yawDegres);
         for (Vector3f pt : points()) {
             pt.add(0, p.air - bas, p.avance);

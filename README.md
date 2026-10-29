@@ -15,7 +15,7 @@ Minecraft **Fabric 26.3** · Fabric API · Java 25 · projet de fan non officiel
 
 ## Installation
 
-1. Mets `abstickmen-26.3-1.0.0.jar` (onglet **Releases**) et **Fabric API** dans le dossier `mods`.
+1. Mets `abstickmen-26.3-1.1.0.jar` (onglet **Releases**) et **Fabric API** dans le dossier `mods`.
 2. Lance le jeu en Fabric 26.3. Avec Iris et un pack de shaders, les stickmen sont dessinés en relief ;
    sans shaders, ce sont des traits plats, comme dans les animations.
 
@@ -41,7 +41,12 @@ aussi son œuf d'apparition.
   ils te suivent aussi dans le Nether et dans l'End.
 - **Ils se battent** contre les monstres qui s'approchent de toi, qui te frappent ou que tu frappes :
   Rouge aux poings, Bleu aux pieds (coups de pied sautés et retournés), Vert à l'épée, Jaune à la
-  hache, Orange au bâton. Ils laissent les creepers à Orange.
+  hache, Orange au bâton.
+- **Ils tirent à l'arc** sur les monstres qui arrivent de loin (jusqu'à 28 blocs), creepers compris :
+  ils s'arrêtent, bandent l'arc et visent en tenant compte de la chute de la flèche et de la marche du
+  monstre. Leurs flèches traversent le joueur, les stickmen, les animaux et les villageois. Quand le
+  monstre arrive à moins de 5 blocs, ils passent au corps à corps ; un creeper arrivé à moins de 4
+  blocs, ils le laissent à Orange. Orange plante son bâton dans le sol le temps de tirer.
 - **Ils minent** les minerais visibles autour de toi avec une pioche en fer, puis te rapportent et
   te lancent le butin.
 - **Ils font des acrobaties** quand tout est calme : salto avant et arrière, roue, poirier, pompes,
@@ -52,6 +57,8 @@ aussi son œuf d'apparition.
 ![Acrobaties](docs/acrobaties.jpg)
 
 ![Combat contre des zombies momifiés](docs/combat.jpg)
+
+![Tir à l'arc sur des zombies momifiés qui arrivent de loin](docs/arc.jpg)
 
 ![Minage dans une grotte](docs/minage.jpg)
 
@@ -92,12 +99,12 @@ deux fois**.
 ## Réglages
 
 `config/abstickmen.json` (créé au premier lancement) : `commandes`, `ecrire`, `messagesSpontanes`,
-`miner`, `acrobaties`. Tout est activé par défaut. Les phrases déjà écrites sont notées dans
+`miner`, `acrobaties`, `arc`. Tout est activé par défaut. Les phrases déjà écrites sont notées dans
 `config/abstickmen/phrases-ecrites.txt`.
 
 ## Tous les mouvements
 
-![Les 26 mouvements](docs/tous-les-mouvements.jpg)
+![Les 27 mouvements](docs/tous-les-mouvements.jpg)
 
 *(Captures du test automatique, sans shaders : sur chaque image, les cinq font le même mouvement.)*
 
@@ -114,7 +121,7 @@ deux fois**.
 ## Pour les développeurs
 
 ```
-./gradlew build                  compile (et copie le jar dans les instances CurseForge de l'auteur, si elles existent et que le jeu est fermé)
+./gradlew build                  compile (et copie le jar dans l'instance CurseForge de test de l'auteur, si elle existe et que le jeu est fermé)
 ./gradlew runClientGameTest      dessine la bande dans un vrai jeu et prend des captures : mouvements, combat, minage, commande, message
 sh outils/tester-dans-instance.sh "<instance>" [photos]   le même test (ou les photos de ce README) dans le vrai jeu d'une instance CurseForge, sans rien y laisser
 ```
@@ -127,7 +134,8 @@ sont dessinées par `outils/textures.py`.
 ## In English
 
 Orange, Red, Blue, Green and Yellow, the stick figures from Alan Becker's animations, come to
-Minecraft (Fabric 26.3). They follow you, do flips and dances, fight monsters and mine ores for you.
+Minecraft (Fabric 26.3). They follow you, do flips and dances, fight monsters, shoot arrows at the ones
+coming from afar (creepers included; their arrows go through you and your pets) and mine ores for you.
 Orange has a hollow head that always faces you, a command staff he uses when commands are enabled
 (slow falling when you fall, fire resistance in lava, `/time set day` when monsters come at night…),
 and he writes messages on your screen, a new one every time. Craft the **Animator's Pencil** (stick,

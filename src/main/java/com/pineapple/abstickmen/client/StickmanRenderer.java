@@ -73,6 +73,13 @@ public class StickmanRenderer extends LivingEntityRenderer<Stickman, StickmanRen
         etat.commandeUrgente = commande.startsWith(Stickman.MARQUE_URGENTE);
         etat.commande = etat.commandeUrgente ? commande.substring(Stickman.MARQUE_URGENTE.length()) : commande;
         itemModelResolver.updateForLiving(etat.objetMain, entite.getMainHandItem(), ItemDisplayContext.NONE, entite);
+        etat.arc = entite.getMainHandItem().is(Items.BOW);
+        if (etat.geste == Geste.TIR_A_L_ARC) {
+            // Le corps d'un mob ne suit sa tête qu'avec retard : pour tirer, il se tourne tout entier vers ce qu'il regarde
+            float w = Math.min(Animations.lisse(etat.tGeste / 4f), Animations.lisse((Geste.TIR_A_L_ARC.duree - etat.tGeste) / 4f));
+            etat.bodyRot += etat.yRot * w;
+            etat.yRot *= 1 - w;
+        }
         if (entite.personnage.estOrange()) {
             if (blocCommande == null) {
                 blocCommande = new ItemStack(Items.COMMAND_BLOCK);
@@ -120,7 +127,11 @@ public class StickmanRenderer extends LivingEntityRenderer<Stickman, StickmanRen
         collecteur.submitCustomGeometry(pile, RenderTypes.entityCutout(BLANC), dessin::tracer);
 
         if (etat.trace >= 1 && !etat.objetMain.isEmpty()) {
-            objetEnMain(etat, pile, collecteur, sq);
+            if (etat.arc) {
+                arcEnMain(etat, pile, collecteur, sq);
+            } else {
+                objetEnMain(etat, pile, collecteur, sq);
+            }
         }
         if (orange && etat.trace >= 1 && !etat.blocCommande.isEmpty()) {
             blocAuBoutDuBaton(etat, pile, collecteur, sq, cam);
@@ -149,6 +160,35 @@ public class StickmanRenderer extends LivingEntityRenderer<Stickman, StickmanRen
         pile.mulPose(new Matrix4f().set(rotation));
         pile.scale(0.75f, 0.75f, 0.75f);
         pile.translate(0.27f, 0.27f, 0);
+        etat.objetMain.submit(pile, collecteur, etat.lightCoords, OverlayTexture.NO_OVERLAY, etat.outlineColor);
+        pile.popPose();
+    }
+
+    /**
+     * L'arc, dans la main gauche : debout, la flèche pointée là où vise le bras gauche (droit devant
+     * lui quand le bras pend). Dans le sprite, la flèche pointe en haut à gauche, les branches vont du
+     * bas à gauche au haut à droite, et la poignée gainée de gris est un peu en haut à gauche du centre.
+     */
+    private static void arcEnMain(StickmanRenderState etat, PoseStack pile, SubmitNodeCollector collecteur, Squelette sq) {
+        float lacet = (float) Math.toRadians(etat.bodyRot);
+        Vector3f tir = new Vector3f((float) -Math.sin(lacet), 0, (float) Math.cos(lacet));
+        Vector3f bras = new Vector3f(sq.axeAvantBras[1].x, 0, sq.axeAvantBras[1].z);
+        float aPlat = bras.length();
+        if (aPlat > 1e-4f) {
+            tir.lerp(bras.div(aPlat), Animations.lisse((aPlat - 0.3f) / 0.5f)).normalize();
+        }
+        Vector3f haut = new Vector3f(0, 1, 0);
+        Vector3f cote = new Vector3f(tir).cross(haut);
+        float r = (float) (1 / Math.sqrt(2));
+        Matrix3f vers = new Matrix3f().set(tir, haut, cote);
+        Matrix3f depuis = new Matrix3f().set(new Vector3f(-r, r, 0), new Vector3f(r, r, 0), new Vector3f(0, 0, -1));
+        Matrix3f rotation = vers.mul(depuis.transpose());
+        Vector3f main = sq.mains[1];
+        pile.pushPose();
+        pile.translate(main.x, main.y, main.z);
+        pile.mulPose(new Matrix4f().set(rotation));
+        pile.scale(0.8f, 0.8f, 0.8f);
+        pile.translate(0.2f, -0.15f, 0);
         etat.objetMain.submit(pile, collecteur, etat.lightCoords, OverlayTexture.NO_OVERLAY, etat.outlineColor);
         pile.popPose();
     }

@@ -15,3 +15,6 @@ run/
 # Journaux
 logs/
 *.log
+
+# Brouillons de publication (pas pour le dépôt)
+post-reddit/

@@ -26,6 +26,8 @@ public final class Reglages {
     public boolean miner = true;
     /** Ils font des acrobaties et des danses quand tout est calme. */
     public boolean acrobaties = true;
+    /** Ils tirent à l'arc sur les monstres qui arrivent de loin (creepers compris). */
+    public boolean arc = true;
 
     private static Reglages actuels = new Reglages();
 

@@ -7,6 +7,7 @@ import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
+import net.minecraft.client.renderer.entity.TippableArrowRenderer;
 
 public final class StickmenClient implements ClientModInitializer {
     @Override
@@ -14,6 +15,7 @@ public final class StickmenClient implements ClientModInitializer {
         for (Personnage p : Personnage.values()) {
             EntityRendererRegistry.register(AlanBeckerStickmen.type(p), StickmanRenderer::new);
         }
+        EntityRendererRegistry.register(AlanBeckerStickmen.FLECHE, TippableArrowRenderer::new);
         HudElementRegistry.addLast(AlanBeckerStickmen.id("message_ecran"), new MessageHud());
         ClientPlayNetworking.registerGlobalReceiver(MessageEcran.TYPE, (message, contexte) -> MessageHud.afficher(message));
     }

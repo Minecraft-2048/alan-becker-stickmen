@@ -78,13 +78,34 @@ public class PhotosTest implements FabricClientGameTest {
             context.waitTicks(40);
 
             dessin();
-            bande();
-            acrobaties();
-            commande();
-            teteCreuse();
-            combat();
-            minage();
+            if (voulu("bande")) {
+                bande();
+            }
+            if (voulu("acrobaties")) {
+                acrobaties();
+            }
+            if (voulu("commande")) {
+                commande();
+            }
+            if (voulu("tete")) {
+                teteCreuse();
+            }
+            if (voulu("combat")) {
+                combat();
+            }
+            if (voulu("arc")) {
+                arc();
+            }
+            if (voulu("minage")) {
+                minage();
+            }
         }
+    }
+
+    /** -Dabstickmen.photos.scenes=arc,combat : seulement ces photos-là (toutes sinon). */
+    private static boolean voulu(String scene) {
+        String seulement = System.getProperty("abstickmen.photos.scenes", "");
+        return seulement.isEmpty() || seulement.contains(scene);
     }
 
     /** Un terrain plat et dégagé devant le joueur, quelques fleurs, deux arbres au fond. */
@@ -199,6 +220,25 @@ public class PhotosTest implements FabricClientGameTest {
         photo("08-combat-c");
         context.waitTicks(12);
         photo("08-combat-d");
+        context.waitTicks(200);
+    }
+
+    /** Des zombies momifiés arrivent de loin : la bande les accueille à l'arc (vue de trois quarts arrière). */
+    private void arc() {
+        run("kill @e[type=husk]");
+        run("time set 4500");
+        run(f("tp @p %.1f %d %.1f 0 6", x0 + 0.5, y0, z0 + 0.5));
+        server.runOnServer(s -> Stickman.galerie = false);
+        context.waitTicks(60);
+        for (int[] p : new int[][]{{-3, 15}, {2, 16}, {5, 14}}) {
+            run(f("summon husk %d %d %d", x0 + p[0], y0, z0 + p[1]));
+        }
+        context.waitTicks(16);
+        regarder(x0 + 3.6, y0, z0 - 3.6, x0 + 0.3, y0 + 1.3, z0 + 5.0);
+        for (char n = 'a'; n <= 'l'; n++) {
+            context.waitTicks(4);
+            photo("10-arc-" + n);
+        }
         context.waitTicks(200);
     }
 

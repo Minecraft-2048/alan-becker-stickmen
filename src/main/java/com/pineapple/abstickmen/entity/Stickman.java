@@ -67,6 +67,7 @@ import net.minecraft.world.entity.monster.Creeper;
 import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.monster.piglin.AbstractPiglin;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -107,6 +108,14 @@ public class Stickman extends PathfinderMob {
     public static final String MARQUE_URGENTE = "!";
     /** Lettres écrites sur l'écran par seconde. */
     public static final float LETTRES_PAR_SECONDE = 16f;
+    /** Tir à l'arc : la flèche part à ce tick du geste. */
+    public static final int LACHER = 22;
+    /**
+     * Portées de l'arc, en blocs : il le sort pour une cible plus loin que TIR_MIN, repasse au corps à
+     * corps en deçà de TIR_PROCHE, et laisse filer un creeper arrivé à moins de CREEPER_TROP_PRES.
+     */
+    private static final double TIR_MIN = 9, TIR_MAX = 28, TIR_PROCHE = 5.5, CREEPER_TROP_PRES = 4;
+    private static final float VITESSE_FLECHE = 2.4f;
 
     private static final Map<EntityType<?>, Personnage> PERSONNAGES = new HashMap<>();
     /** Minerais déjà visés : deux stickmen ne piochent jamais le même bloc. */
@@ -125,6 +134,8 @@ public class Stickman extends PathfinderMob {
     private int debutGesteClient;
     private final SimpleContainer sac = new SimpleContainer(9);
     private boolean mine;
+    /** Il a sorti son arc (une cible au loin). */
+    private boolean arc;
     private int prochainAmusement = 160;
     private int prochainSalut;
     private float angleSuivi = Float.NaN;
@@ -186,16 +197,29 @@ public class Stickman extends PathfinderMob {
         goalSelector.addGoal(1, new AssisGoal());
         goalSelector.addGoal(1, new OpenDoorGoal(this, true));
         goalSelector.addGoal(2, new BondirGoal());
+        goalSelector.addGoal(2, new TirGoal());
         goalSelector.addGoal(3, new CombatGoal());
         goalSelector.addGoal(4, new MinerGoal());
         goalSelector.addGoal(5, new RapporterGoal());
         goalSelector.addGoal(6, new SuivreGoal());
         goalSelector.addGoal(7, new AmuserGoal());
-        goalSelector.addGoal(8, new LookAtPlayerGoal(this, Player.class, 8f));
-        goalSelector.addGoal(9, new RandomLookAroundGoal(this));
+        // Pendant les tests en jeu, ils gardent la tête là où on la leur met
+        goalSelector.addGoal(8, new LookAtPlayerGoal(this, Player.class, 8f) {
+            @Override
+            public boolean canUse() {
+                return !galerie && super.canUse();
+            }
+        });
+        goalSelector.addGoal(9, new RandomLookAroundGoal(this) {
+            @Override
+            public boolean canUse() {
+                return !galerie && super.canUse();
+            }
+        });
         targetSelector.addGoal(1, new DefendreGoal());
         targetSelector.addGoal(2, new AiderGoal());
-        targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, Mob.class, 10, true, true,
+        targetSelector.addGoal(3, new ViserGoal());
+        targetSelector.addGoal(4, new NearestAttackableTargetGoal<>(this, Mob.class, 10, true, true,
                 (cible, niveau) -> aCombattre(cible)));
     }
 
@@ -404,11 +428,13 @@ public class Stickman extends PathfinderMob {
         }
     }
 
-    /** Ce qu'il tient en main : son arme pendant un combat, la pioche pendant qu'il mine, rien sinon. */
+    /** Ce qu'il tient en main : son arc ou son arme pendant un combat, la pioche pendant qu'il mine, rien sinon. */
     private void equiper() {
         Item voulu = Items.AIR;
         if (mine) {
             voulu = Items.IRON_PICKAXE;
+        } else if (arc) {
+            voulu = Items.BOW;
         } else if (getTarget() != null) {
             if (personnage.style == Personnage.Style.EPEE) {
                 voulu = Items.IRON_SWORD;
@@ -520,6 +546,78 @@ public class Stickman extends PathfinderMob {
             case EPEE -> r < 0.8f ? Geste.COUP_D_EPEE : Geste.COUP_DE_PIED;
             case HACHE -> r < 0.7f ? Geste.COUP_D_EPEE : r < 0.85f ? Geste.DIRECT : Geste.CROCHET;
         };
+    }
+
+    /** Un monstre qui vient vers nous : il vise le joueur ou quelqu'un de la bande, ou marche droit sur le joueur. */
+    private boolean approche(Mob m, ServerPlayer p) {
+        LivingEntity visee = m.getTarget();
+        if (visee == p || visee != null && memeBande(visee)) {
+            return true;
+        }
+        if (m instanceof NeutralMob || m instanceof AbstractPiglin) {
+            return false;   // ceux-là ne sont des ennemis que s'ils attaquent
+        }
+        Vec3 vers = p.position().subtract(m.position());
+        Vec3 v = m.getDeltaMovement();
+        double aPlat = Math.sqrt(vers.x * vers.x + vers.z * vers.z);
+        return aPlat > 0 && (v.x * vers.x + v.z * vers.z) / aPlat > 0.04;
+    }
+
+    /**
+     * La flèche part de l'arc, devant lui à hauteur du cou. La visée tient compte de la gravité et du
+     * frottement de l'air, et prend un peu d'avance sur une cible qui marche.
+     */
+    private void tirer(ServerLevel niveau, LivingEntity cible) {
+        stopUsingItem();
+        Vec3 devant = Vec3.directionFromRotation(0, getYRot());
+        Vec3 depart = position().add(devant.x * 0.55, 1.3, devant.z * 0.55);
+        Vec3 visee = cible.getBoundingBox().getCenter();
+        double vol = depart.distanceTo(visee) / VITESSE_FLECHE * 1.1;
+        // L'avance se fait sur sa marche, pas sur un recul (une flèche reçue le repousse un instant)
+        Vec3 v = cible.getDeltaMovement().multiply(1, 0, 1);
+        if (v.lengthSqr() > 0.25 * 0.25) {
+            v = v.normalize().scale(0.25);
+        }
+        visee = visee.add(v.x * vol, 0, v.z * vol);
+        double dx = visee.x - depart.x, dz = visee.z - depart.z;
+        double aPlat = Math.max(0.1, Math.sqrt(dx * dx + dz * dz));
+        double angle = angleDeTir(aPlat, visee.y - depart.y);
+        double c = Math.cos(angle);
+        Fleche fleche = new Fleche(AlanBeckerStickmen.FLECHE, niveau);
+        fleche.setOwner(this);
+        fleche.setPos(depart);
+        fleche.setBaseDamage(1.6);
+        fleche.setCritArrow(true);
+        Projectile.spawnProjectileUsingShoot(fleche, niveau, new ItemStack(Items.ARROW), dx / aPlat * c, Math.sin(angle), dz / aPlat * c,
+                VITESSE_FLECHE, 1f);
+        playSound(SoundEvents.ARROW_SHOOT, 1f, 1f / (random.nextFloat() * 0.4f + 1.2f) + 0.5f);
+    }
+
+    /** L'angle (vers le haut) qui amène la flèche {@code dy} blocs plus haut au bout de {@code aPlat} blocs. */
+    private static double angleDeTir(double aPlat, double dy) {
+        double bas = -Math.PI / 4, haut = Math.PI / 4;
+        for (int i = 0; i < 24; i++) {
+            double milieu = (bas + haut) / 2;
+            if (hauteurAuBout(aPlat, milieu) < dy) {
+                bas = milieu;
+            } else {
+                haut = milieu;
+            }
+        }
+        return (bas + haut) / 2;
+    }
+
+    /** Hauteur de la flèche au bout de {@code aPlat} blocs, comme le jeu la fait voler (frottement 0,99 et gravité 0,05 par tick). */
+    private static double hauteurAuBout(double aPlat, double angle) {
+        double vx = VITESSE_FLECHE * Math.cos(angle), vy = VITESSE_FLECHE * Math.sin(angle), x = 0, y = 0;
+        for (int t = 0; t < 200 && x < aPlat; t++) {
+            double part = Math.min(1, (aPlat - x) / vx);
+            x += vx * part;
+            y += vy * part;
+            vx *= 0.99;
+            vy = vy * 0.99 - 0.05;
+        }
+        return y;
     }
 
     @Override
@@ -892,6 +990,89 @@ public class Stickman extends PathfinderMob {
         @Override
         public boolean canContinueToUse() {
             return libre() && super.canContinueToUse();
+        }
+    }
+
+    /** De loin, à l'arc : il s'arrête, bande son arc, vise et tire. Trop près, il laisse la place au corps à corps. */
+    private final class TirGoal extends Goal {
+        private int lacher = -1;
+        private int prochainTir;
+
+        TirGoal() {
+            setFlags(EnumSet.of(Flag.MOVE, Flag.LOOK));
+        }
+
+        private boolean aPortee(double min) {
+            LivingEntity c = getTarget();
+            ServerPlayer p = proprio();
+            if (!libre() || !Reglages.get().arc || c == null || !c.isAlive() || p == null || p.level() != level()
+                    || distanceToSqr(p) > 24 * 24) {
+                return false;
+            }
+            double d2 = distanceToSqr(c);
+            return d2 >= min * min && d2 <= TIR_MAX * TIR_MAX;
+        }
+
+        @Override
+        public boolean canUse() {
+            return aPortee(TIR_MIN) && getSensing().hasLineOfSight(getTarget());
+        }
+
+        @Override
+        public boolean canContinueToUse() {
+            // Une flèche déjà bandée part quand même ; sinon il faut que la cible soit encore assez loin
+            return aPortee(lacher >= 0 ? 0 : getTarget() instanceof Creeper ? CREEPER_TROP_PRES : TIR_PROCHE);
+        }
+
+        @Override
+        public void start() {
+            arc = true;
+            equiper();
+            getNavigation().stop();
+            prochainTir = tickCount + 3;
+        }
+
+        @Override
+        public void stop() {
+            arc = false;
+            lacher = -1;
+            stopUsingItem();
+            if (geste == Geste.TIR_A_L_ARC) {
+                finirGeste();
+            }
+        }
+
+        @Override
+        public boolean requiresUpdateEveryTick() {
+            return true;
+        }
+
+        @Override
+        public void tick() {
+            LivingEntity c = getTarget();
+            if (c == null || !(level() instanceof ServerLevel niveau)) {
+                return;
+            }
+            getNavigation().stop();
+            getLookControl().setLookAt(c, 30f, 30f);
+            float vers = (float) Math.toDegrees(Math.atan2(c.getZ() - getZ(), c.getX() - getX())) - 90f;
+            setYRot(vers);
+            setYBodyRot(vers);
+            if (lacher >= 0) {
+                if (geste != Geste.TIR_A_L_ARC) {
+                    lacher = -1;        // interrompu (l'orange tape une commande urgente, par exemple)
+                    stopUsingItem();
+                } else if (tickCount >= lacher) {
+                    tirer(niveau, c);
+                    lacher = -1;
+                    prochainTir = tickCount + 12 + random.nextInt(16);
+                }
+            } else if (tickCount >= prochainTir && geste != Geste.COMMANDE && geste != Geste.ECRIRE && getSensing().hasLineOfSight(c)) {
+                equiper();
+                startUsingItem(InteractionHand.MAIN_HAND);
+                jouer(Geste.TIR_A_L_ARC);
+                lacher = tickCount + LACHER;
+            }
         }
     }
 
@@ -1351,6 +1532,58 @@ public class Stickman extends PathfinderMob {
             if (p != null) {
                 dernier = p.getLastHurtMobTimestamp();
             }
+            super.start();
+        }
+    }
+
+    /** Repère de loin les monstres qui s'approchent, creepers compris : de quoi sortir l'arc. */
+    private final class ViserGoal extends TargetGoal {
+        private @Nullable LivingEntity cible;
+
+        ViserGoal() {
+            super(Stickman.this, true);
+            setFlags(EnumSet.of(Flag.TARGET));
+        }
+
+        @Override
+        public boolean canUse() {
+            ServerPlayer p = proprio();
+            if (p == null || !libre() || !Reglages.get().arc || tickCount % 10 != 0 || p.level() != level()) {
+                return false;
+            }
+            cible = null;
+            double mieux = Double.MAX_VALUE;
+            List<Stickman> autres = level().getEntitiesOfClass(Stickman.class, getBoundingBox().inflate(32), s -> s != Stickman.this && memeBande(s));
+            for (Mob m : level().getEntitiesOfClass(Mob.class, getBoundingBox().inflate(TIR_MAX), e -> e instanceof Enemy && e.isAlive())) {
+                double d2 = distanceToSqr(m);
+                if (d2 < TIR_MIN * TIR_MIN || d2 > TIR_MAX * TIR_MAX || m.distanceToSqr(p) >= 32 * 32 || !approche(m, p)
+                        || !getSensing().hasLineOfSight(m) || !canAttack(m, TargetingConditions.DEFAULT)) {
+                    continue;
+                }
+                // Chacun le sien : un monstre touché revient invincible un instant, les flèches suivantes rebondiraient.
+                // Celui que d'autres visent déjà compte comme 15 blocs plus loin.
+                double note = d2 + 15 * 15 * autres.stream().filter(s -> s.getTarget() == m).count();
+                if (note < mieux) {
+                    mieux = note;
+                    cible = m;
+                }
+            }
+            return cible != null;
+        }
+
+        @Override
+        public boolean canContinueToUse() {
+            LivingEntity c = mob.getTarget();
+            // Un creeper arrivé trop près : on le laisse (à l'orange et à ses commandes)
+            if (c == null || c instanceof Creeper && distanceToSqr(c) < CREEPER_TROP_PRES * CREEPER_TROP_PRES) {
+                return false;
+            }
+            return super.canContinueToUse();
+        }
+
+        @Override
+        public void start() {
+            mob.setTarget(cible);
             super.start();
         }
     }

@@ -26,6 +26,8 @@ public final class Pose {
     public float air, avance;
     /** Le bâton de l'orange : 0 = tenu comme un bâton de marche, 1 = levé dans l'axe du bras. */
     public float batonLeve;
+    /** 1 = le bâton planté dans le sol à côté de lui (il a besoin de ses deux mains pour tirer à l'arc). */
+    public float batonPlante;
 
     public void repos() {
         for (int i = 0; i < 2; i++) {
@@ -40,7 +42,7 @@ public final class Pose {
         torse = torseCote = torsion = tete = teteCote = 0;
         tourAvant = tourCote = tourVertical = 0;
         air = avance = 0;
-        batonLeve = 0;
+        batonLeve = batonPlante = 0;
     }
 
     /** Mélange vers {@code autre} : t = 0 garde cette pose, t = 1 donne {@code autre}. */
@@ -65,6 +67,7 @@ public final class Pose {
         air += (autre.air - air) * t;
         avance += (autre.avance - avance) * t;
         batonLeve += (autre.batonLeve - batonLeve) * t;
+        batonPlante += (autre.batonPlante - batonPlante) * t;
     }
 
     /** Recopie seulement le haut du corps (bras, torse, tête) de {@code autre}. */
@@ -81,6 +84,7 @@ public final class Pose {
         tete += (autre.tete - tete) * t;
         teteCote += (autre.teteCote - teteCote) * t;
         batonLeve += (autre.batonLeve - batonLeve) * t;
+        batonPlante += (autre.batonPlante - batonPlante) * t;
     }
 
     public void copier(Pose autre) {

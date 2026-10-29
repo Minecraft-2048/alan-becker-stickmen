@@ -39,10 +39,10 @@ loom.runs.matching { it.name == "clientGameTest" }.configureEach {
     if (project.hasProperty("scenes")) vmArg "-Dabstickmen.test.scenes=${project.property('scenes')}"
 }
 
-// Après chaque build, le jar part tout seul dans les instances de jeu (il écrase le précédent).
+// Après chaque build, le jar part tout seul dans l'instance de test (il écrase le précédent).
 // Si le jeu de l'instance est ouvert, Windows refuse de renommer le jar qu'il utilise : on n'y touche
 // pas (le remplacer en pleine partie pourrait la faire planter).
-def instances = ["Test mods Fabric 26.3", "Skyblock 26.3"].collect {
+def instances = ["Test mods Fabric 26.3"].collect {
     file("${System.getProperty('user.home')}/curseforge/minecraft/Instances/${it}/mods")
 }
 tasks.register("installMod") {
@@ -51,18 +51,21 @@ tasks.register("installMod") {
     doLast {
         def source = jar.get().asFile
         instances.findAll { it.isDirectory() }.each { mods ->
-            def cible = new File(mods, source.name)
-            def essai = new File(mods, source.name + ".essai")
-            if (cible.exists()) {
-                boolean libre = cible.renameTo(essai)
-                if (essai.exists() && !cible.exists()) {
-                    essai.renameTo(cible)
+            def deja = mods.listFiles().findAll { it.name ==~ /abstickmen-.*\.jar/ }
+            def ouvert = deja.any { ancien ->
+                def essai = new File(mods, ancien.name + ".essai")
+                boolean libre = ancien.renameTo(essai)
+                if (essai.exists() && !ancien.exists()) {
+                    essai.renameTo(ancien)
                 }
-                if (!libre) {
-                    println "Jeu ouvert sur « ${mods.parentFile.name} » : jar pas remplacé (relance le build une fois le jeu fermé)"
-                    return
-                }
+                !libre
             }
+            if (ouvert) {
+                println "Jeu ouvert sur « ${mods.parentFile.name} » : jar pas remplacé (relance le build une fois le jeu fermé)"
+                return
+            }
+            // Une ancienne version laissée à côté ferait planter le jeu (deux fois le même mod)
+            deja.findAll { it.name != source.name }.each { it.delete() }
             copy {
                 from source
                 into mods

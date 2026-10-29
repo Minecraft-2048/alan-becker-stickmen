@@ -25,5 +25,7 @@ public class StickmanRenderState extends LivingEntityRenderState {
     /** Décalage propre à chacun, pour qu'ils ne respirent pas tous en même temps. */
     public float decalage;
     public final ItemStackRenderState objetMain = new ItemStackRenderState();
+    /** L'objet tenu est un arc : il se tient dans la main gauche, debout, pointé vers la cible. */
+    public boolean arc;
     public final ItemStackRenderState blocCommande = new ItemStackRenderState();
 }

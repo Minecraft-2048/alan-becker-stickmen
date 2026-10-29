@@ -94,6 +94,10 @@ public class StickmenTest implements FabricClientGameTest {
             if (voulu("minage")) {
                 minage();
             }
+            if (voulu("arc")) {
+                arcDeCote();
+                arc();
+            }
 
             // Accroupi + clic droit : la gomme efface toute la bande
             run("tp @p 0.5 -60 0.5 0 10");
@@ -127,7 +131,7 @@ public class StickmenTest implements FabricClientGameTest {
                 {Geste.GRATTE_TETE, 0.5}, {Geste.BRAS_CROISES, 0.5}, {Geste.MAINS_HANCHES, 0.5}, {Geste.VICTOIRE, 0.4},
                 {Geste.DIRECT, 0.45}, {Geste.CROCHET, 0.45}, {Geste.UPPERCUT, 0.45}, {Geste.COUP_DE_PIED, 0.5},
                 {Geste.COUP_DE_PIED_RETOURNE, 0.55}, {Geste.COUP_DE_PIED_SAUTE, 0.45}, {Geste.COUP_D_EPEE, 0.45},
-                {Geste.COUP_DE_BATON, 0.3}, {Geste.PIOCHE, 0.35}, {Geste.LANCER, 0.4},
+                {Geste.COUP_DE_BATON, 0.3}, {Geste.TIR_A_L_ARC, 0.7}, {Geste.PIOCHE, 0.35}, {Geste.LANCER, 0.4},
         };
         for (Object[] g : gestes) {
             Geste geste = (Geste) g[0];
@@ -135,6 +139,9 @@ public class StickmenTest implements FabricClientGameTest {
             surTous(s -> {
                 if (geste == Geste.COUP_D_EPEE) {
                     s.setItemSlot(net.minecraft.world.entity.EquipmentSlot.MAINHAND, new net.minecraft.world.item.ItemStack(Items.IRON_SWORD));
+                } else if (geste == Geste.TIR_A_L_ARC) {
+                    s.setItemSlot(net.minecraft.world.entity.EquipmentSlot.MAINHAND, new net.minecraft.world.item.ItemStack(Items.BOW));
+                    s.startUsingItem(net.minecraft.world.InteractionHand.MAIN_HAND);
                 } else if (geste == Geste.PIOCHE) {
                     s.setItemSlot(net.minecraft.world.entity.EquipmentSlot.MAINHAND, new net.minecraft.world.item.ItemStack(Items.IRON_PICKAXE));
                 } else {
@@ -266,6 +273,95 @@ public class StickmenTest implements FabricClientGameTest {
         int diamants = server.computeOnServer(s -> joueur(s).getInventory().countItem(Items.DIAMOND));
         int fer = server.computeOnServer(s -> joueur(s).getInventory().countItem(Items.RAW_IRON));
         LOG.info("[test] minerais restants : {} ; dans l'inventaire : {} diamant(s), {} fer brut", restants, diamants, fer);
+    }
+
+    /** Le tir à l'arc vu de côté (tous tournés vers l'est) : en train de bander, arc bandé, flèche lâchée. */
+    private void arcDeCote() {
+        ranger(4.5);
+        context.runOnClient(mc -> {
+            if (!mc.gui.hud.isHidden()) {
+                mc.gui.hud.toggle();
+            }
+        });
+        run("tp @p 0.5 -59.4 0.6 0 6");
+        surTous(s -> {
+            s.snapTo(s.getX(), s.getY(), s.getZ(), -90, 0);
+            s.setYBodyRot(-90);
+            s.setYHeadRot(-90);
+            s.setItemSlot(net.minecraft.world.entity.EquipmentSlot.MAINHAND, new net.minecraft.world.item.ItemStack(Items.BOW));
+            s.startUsingItem(net.minecraft.world.InteractionHand.MAIN_HAND);
+            s.jouer(Geste.TIR_A_L_ARC);
+        });
+        context.waitTicks(10);
+        context.takeScreenshot("60-arc-de-cote-tension");
+        context.waitTicks(9);
+        context.takeScreenshot("61-arc-de-cote-bande");
+        surTous(s -> s.stopUsingItem());
+        context.waitTicks(5);
+        context.takeScreenshot("62-arc-de-cote-lache");
+        context.waitTicks(20);
+        // De face : on doit voir la main droite tirer la corde jusqu'à la joue
+        surTous(s -> {
+            s.snapTo(s.getX(), s.getY(), s.getZ(), 180, 0);
+            s.setYBodyRot(180);
+            s.setYHeadRot(180);
+            s.startUsingItem(net.minecraft.world.InteractionHand.MAIN_HAND);
+            s.jouer(Geste.TIR_A_L_ARC);
+        });
+        context.waitTicks(19);
+        context.takeScreenshot("62b-arc-de-face");
+        surTous(s -> s.stopUsingItem());
+        context.waitTicks(20);
+        context.runOnClient(mc -> mc.gui.hud.toggle());
+        surTous(s -> s.setItemSlot(net.minecraft.world.entity.EquipmentSlot.MAINHAND, net.minecraft.world.item.ItemStack.EMPTY));
+    }
+
+    /** Des zombies momifiés et un creeper arrivent de loin : la bande doit les abattre à l'arc, sans toucher le joueur. */
+    private void arc() {
+        server.runOnServer(s -> Stickman.galerie = false);
+        run("tp @p 0.5 -60 0.5 0 10");
+        context.waitTicks(40);
+        run("summon husk 6.5 -60 24.5");
+        run("summon husk -5.5 -60 25.5");
+        run("summon husk 0.5 -60 27.5");
+        run("summon creeper -1.5 -60 15.5");
+        // Ils ont repéré le joueur et viennent vers lui (sinon, au hasard, certains restent loin à flâner)
+        server.runOnServer(s -> {
+            for (var e : s.overworld().getAllEntities()) {
+                if (e instanceof net.minecraft.world.entity.monster.Monster m) {
+                    m.setTarget(joueur(s));
+                }
+            }
+        });
+        for (int i = 0; i < 18; i++) {
+            context.waitTicks(12);
+            if (i < 4) {
+                context.takeScreenshot("63-arc-" + i);
+            }
+            LOG.info("[test] arc {} : flèches {}, zombies momifiés {}, {}", i * 12 + 12, (Object) server.computeOnServer(s -> compter(s,
+                    com.pineapple.abstickmen.AlanBeckerStickmen.FLECHE)), (Object) server.computeOnServer(s -> compter(s, EntityTypes.HUSK)),
+                    server.computeOnServer(s -> {
+                        StringBuilder etat = new StringBuilder();
+                        for (var e : s.overworld().getAllEntities()) {
+                            if (e instanceof net.minecraft.world.entity.monster.Creeper c && c.isAlive()) {
+                                etat.append(String.format(Locale.ROOT, "creeper %.0f PV à %.1f blocs, vise %s", c.getHealth(),
+                                        c.distanceTo(joueur(s)), c.getTarget() == null ? "personne" : c.getTarget().getName().getString()));
+                            }
+                        }
+                        for (Stickman st : bande(s)) {
+                            etat.append(" | ").append(st.personnage.name()).append(" → ")
+                                    .append(st.getTarget() == null ? "-" : st.getTarget().getName().getString()).append(' ')
+                                    .append(st.gesteServeur().name());
+                        }
+                        return etat.toString();
+                    }));
+        }
+        context.takeScreenshot("64-arc-fini");
+        int husks = server.computeOnServer(s -> compter(s, EntityTypes.HUSK));
+        int creepers = server.computeOnServer(s -> compter(s, EntityTypes.CREEPER));
+        int dansLeJoueur = server.computeOnServer(s -> joueur(s).getArrowCount());
+        LOG.info("[test] arc : après 15 s, {} zombie(s) momifié(s) et {} creeper(s) encore en vie ; flèches plantées dans le joueur : {}",
+                husks, creepers, dansLeJoueur);
     }
 
     // ------------------------------------------------------------------ outils

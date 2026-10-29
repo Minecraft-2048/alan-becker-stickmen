@@ -36,6 +36,8 @@ public enum Geste {
     COUP_DE_PIED_SAUTE(16, true, Famille.COMBAT, "coup de pied sauté", "flying kick"),
     COUP_D_EPEE(10, false, Famille.COMBAT, "coup d'épée", "sword slash"),
     COUP_DE_BATON(12, false, Famille.COMBAT, "coup de bâton", "staff strike"),
+    /** Il bande son arc, vise, lâche la flèche (au tick Stickman.LACHER) et sa main part en arrière. */
+    TIR_A_L_ARC(28, false, Famille.COMBAT, "tir à l'arc", "bow shot"),
 
     // Travail
     PIOCHE(10, false, Famille.TRAVAIL, "coup de pioche", "pickaxe swing"),

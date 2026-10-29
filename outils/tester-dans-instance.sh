@@ -5,6 +5,11 @@
 #
 #   sh outils/tester-dans-instance.sh ["Test mods Fabric 26.3"] [scènes : gestes,angles,commande,combat,minage]
 #   sh outils/tester-dans-instance.sh "Test mods Fabric 26.3" photos      les photos du README (vrai monde, 1600×900)
+#   sh outils/tester-dans-instance.sh "Test mods Fabric 26.3" photos:arc  seulement certaines photos (bande, acrobaties,
+#                                                                         commande, tete, combat, arc, minage)
+#   SHADERS=ComplementaryReimagined_r5.9.3.zip sh outils/tester-dans-instance.sh …
+#                                       ce pack de shaders (dans shaderpacks/) pour la durée du test : le réglage d'Iris
+#                                       de l'instance est remis tel quel à la fin
 #
 # Captures dans run/instance/captures, journal du jeu dans run/instance/jeu.log.
 set -e
@@ -24,15 +29,29 @@ cp "$API" "$SORTIE/"
 
 # Ce qu'il y a avant, pour tout remettre comme c'était
 cp "$INSTANCE/options.txt" "$SORTIE/options.txt.sauvegarde"
+IRIS="$INSTANCE/config/iris.properties"
+if [ -n "$SHADERS" ] && [ -f "$IRIS" ]; then
+    cp "$IRIS" "$SORTIE/iris.properties.sauvegarde"
+    sed -i -e "s/^enableShaders=.*/enableShaders=true/" -e "s/^shaderPack=.*/shaderPack=$SHADERS/" "$IRIS"
+fi
 ls "$INSTANCE/saves" > "$SORTIE/saves-avant.txt"
 ls "$INSTANCE/screenshots" > "$SORTIE/captures-avant.txt" 2>/dev/null || true
+
+PHOTOS=""
+case "$SCENES" in
+    photos:*) PHOTOS="-Dabstickmen.photos=true -Dabstickmen.photos.scenes=${SCENES#photos:}" ;;
+    photos) PHOTOS="-Dabstickmen.photos=true" ;;
+esac
 
 W=$(cygpath -w "$PWD/$SORTIE")
 python -I outils/lancer_instance.py "$INSTANCE" "$SORTIE/jeu.log" "$PWD/$SORTIE/natives" \
     "-Dfabric.addMods=$W\\$(basename "$API");$W\\abstickmen-gametest.jar" "-Dfabric.client.gametest" \
-    ${SCENES:+"-Dabstickmen.test.scenes=$SCENES"} $([ "$SCENES" = photos ] && echo "-Dabstickmen.photos=true") || true
+    ${SCENES:+"-Dabstickmen.test.scenes=$SCENES"} $PHOTOS || true
 
 cp "$SORTIE/options.txt.sauvegarde" "$INSTANCE/options.txt"
+if [ -f "$SORTIE/iris.properties.sauvegarde" ]; then
+    cp "$SORTIE/iris.properties.sauvegarde" "$IRIS"
+fi
 if [ -d "$INSTANCE/screenshots" ]; then
     ls "$INSTANCE/screenshots" | while read -r f; do
         grep -qxF "$f" "$SORTIE/captures-avant.txt" || mv "$INSTANCE/screenshots/$f" "$SORTIE/captures/"
