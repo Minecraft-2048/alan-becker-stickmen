@@ -13,10 +13,10 @@ import net.fabricmc.loader.api.FabricLoader;
 
 /**
  * Réglages du mod, dans config/abstickmen.json (créé au premier lancement). Tout est activé par
- * défaut ; l'orange ne tape de commandes que si le joueur a lui-même le droit d'en taper.
+ * défaut ; Jaune ne tape de commandes que si le joueur a lui-même le droit d'en taper.
  */
 public final class Reglages {
-    /** L'orange peut taper des commandes avec son bâton (si les commandes sont activées dans le monde). */
+    /** Jaune peut taper des commandes avec son bâton (si les commandes sont activées dans le monde). */
     public boolean commandes = true;
     /** L'orange peut écrire des messages sur l'écran. */
     public boolean ecrire = true;

@@ -80,7 +80,7 @@ public class StickmanRenderer extends LivingEntityRenderer<Stickman, StickmanRen
             etat.bodyRot += etat.yRot * w;
             etat.yRot *= 1 - w;
         }
-        if (entite.personnage.estOrange()) {
+        if (entite.personnage.aLeBaton()) {
             if (blocCommande == null) {
                 blocCommande = new ItemStack(Items.COMMAND_BLOCK);
             }
@@ -119,10 +119,10 @@ public class StickmanRenderer extends LivingEntityRenderer<Stickman, StickmanRen
         Squelette sq = new Squelette();
         sq.calculer(pose, etat.bodyRot);
         Vector3f cam = new Vector3f((float) (camera.pos.x - etat.x), (float) (camera.pos.y - etat.y), (float) (camera.pos.z - etat.z));
-        boolean orange = etat.personnage.estOrange();
+        boolean baton = etat.personnage.aLeBaton();
         int couleur = 0xFF000000 | etat.personnage.couleur;
         int overlay = getOverlayCoords(etat, 0);
-        Dessin dessin = new Dessin(sq, cam, couleur, etat.lightCoords, overlay, etat.trace, etat.personnage.teteCreuse, orange,
+        Dessin dessin = new Dessin(sq, cam, couleur, etat.lightCoords, overlay, etat.trace, etat.personnage.teteCreuse, baton,
                 Shaders.actifs());
         collecteur.submitCustomGeometry(pile, RenderTypes.entityCutout(BLANC), dessin::tracer);
 
@@ -133,10 +133,10 @@ public class StickmanRenderer extends LivingEntityRenderer<Stickman, StickmanRen
                 objetEnMain(etat, pile, collecteur, sq);
             }
         }
-        if (orange && etat.trace >= 1 && !etat.blocCommande.isEmpty()) {
+        if (baton && etat.trace >= 1 && !etat.blocCommande.isEmpty()) {
             blocAuBoutDuBaton(etat, pile, collecteur, sq, cam);
         }
-        if (orange && etat.geste == Geste.COMMANDE && !etat.commande.isEmpty()) {
+        if (baton && etat.geste == Geste.COMMANDE && !etat.commande.isEmpty()) {
             bulleDeCommande(etat, pile, collecteur, camera, sq);
         }
     }
@@ -193,7 +193,7 @@ public class StickmanRenderer extends LivingEntityRenderer<Stickman, StickmanRen
         pile.popPose();
     }
 
-    /** Un petit bloc de commande planté au bout du bâton de l'orange. */
+    /** Un petit bloc de commande planté au bout du bâton de Jaune. */
     private static void blocAuBoutDuBaton(StickmanRenderState etat, PoseStack pile, SubmitNodeCollector collecteur, Squelette sq, Vector3f cam) {
         Vector3f haut = new Vector3f(sq.axeBaton);
         Vector3f face = new Vector3f(cam).sub(sq.batonHaut);

@@ -17,7 +17,7 @@ import net.minecraft.world.level.Level;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Ce que l'orange tape avec son bâton de commande, et quand. Il ne le fait que si le joueur a
+ * Ce que Jaune tape avec son bâton de commande, et quand. Il ne le fait que si le joueur a
  * lui-même le droit de taper des commandes (monde avec les commandes activées, ou joueur opérateur),
  * et seulement quand ça sert : le joueur tombe de haut, brûle, se noie, n'a plus de cœurs, il fait
  * nuit et les monstres approchent… Chaque sorte de commande a son temps de recharge.
@@ -39,11 +39,11 @@ public final class Commandes {
         return Reglages.get().commandes && joueur.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER);
     }
 
-    public static @Nullable Choix choisir(Stickman orange, ServerPlayer p, ServerLevel niveau, Map<String, Long> dernieres,
+    public static @Nullable Choix choisir(Stickman jaune, ServerPlayer p, ServerLevel niveau, Map<String, Long> dernieres,
                                           long derniereQuelconque, long t) {
         String nom = p.getName().getString();
         boolean survie = !p.isCreative() && !p.isSpectator();
-        if (p.level() != niveau || orange.distanceToSqr(p) > 32 * 32) {
+        if (p.level() != niveau || jaune.distanceToSqr(p) > 32 * 32) {
             return null;
         }
 
@@ -65,7 +65,7 @@ public final class Commandes {
         }
 
         // Le reste : au plus une commande toutes les 40 secondes, et pas en plein milieu d'un geste
-        if (t - derniereQuelconque < 800 || orange.gesteServeur() != Geste.AUCUN) {
+        if (t - derniereQuelconque < 800 || jaune.gesteServeur() != Geste.AUCUN) {
             return null;
         }
         BlockPos pos = p.blockPosition();
@@ -80,7 +80,7 @@ public final class Commandes {
             return new Choix("creeper", "/effect give @e[type=creeper,distance=..14] levitation 4 1", false);
         }
         if (survie && morts >= 3 && pret(dernieres, "morts", 900, t)) {
-            // L'astuce de l'orange : la potion de soin blesse les morts-vivants
+            // L'astuce de Jaune : la potion de soin blesse les morts-vivants
             return new Choix("morts", "/effect give @e[type=#undead,distance=..16] instant_health 1 1", false);
         }
         if (niveau.dimension() == Level.OVERWORLD && dehors && niveau.isDarkOutside() && (monstres.size() >= 2 || p.getHealth() < 12)
@@ -105,12 +105,12 @@ public final class Commandes {
                 && pret(dernieres, "hate", 3600, t)) {
             return new Choix("hate", "/effect give " + nom + " haste 60 1", false);
         }
-        if (niveau.isRaining() && dehors && pret(dernieres, "pluie", 12000, t) && orange.getRandom().nextInt(30) == 0) {
+        if (niveau.isRaining() && dehors && pret(dernieres, "pluie", 12000, t) && jaune.getRandom().nextInt(30) == 0) {
             return new Choix("pluie", "/weather clear", false);
         }
         // Pour le plaisir, de temps en temps, quand tout est calme
-        if (monstres.isEmpty() && pret(dernieres, "cadeau", 9000, t) && orange.getRandom().nextInt(400) == 0) {
-            return switch (orange.getRandom().nextInt(3)) {
+        if (monstres.isEmpty() && pret(dernieres, "cadeau", 9000, t) && jaune.getRandom().nextInt(400) == 0) {
+            return switch (jaune.getRandom().nextInt(3)) {
                 case 0 -> new Choix("cadeau", "/give " + nom + " cookie 3", false);
                 case 1 -> new Choix("cadeau", String.format(java.util.Locale.ROOT,
                         "/particle totem_of_undying %d %d %d 0.6 0.8 0.6 0.4 80", p.getBlockX(), p.getBlockY() + 2, p.getBlockZ()), false);

@@ -85,10 +85,10 @@ import org.jspecify.annotations.Nullable;
 /**
  * Un bonhomme-bâton d'Alan Becker. Il suit le joueur qui l'a dessiné, se bat contre les monstres qui
  * l'approchent, mine les minerais visibles autour de lui et lui rapporte ce qu'il trouve, et fait des
- * acrobaties quand tout est calme. L'orange a en plus son bâton de commande et écrit sur l'écran.
+ * acrobaties quand tout est calme. Jaune a en plus son bâton de commande, et l'orange écrit sur l'écran.
  *
  * Le serveur décide de tout ; le client ne reçoit que le geste en cours (voir {@link Geste}), sa
- * durée, la commande que l'orange tape, l'avancée du coup de crayon qui le dessine, et s'il est assis.
+ * durée, la commande que Jaune tape, l'avancée du coup de crayon qui le dessine, et s'il est assis.
  */
 public class Stickman extends PathfinderMob {
     private static final EntityDataAccessor<Integer> DATA_GESTE = SynchedEntityData.defineId(Stickman.class, EntityDataSerializers.INT);
@@ -141,14 +141,12 @@ public class Stickman extends PathfinderMob {
     private float angleSuivi = Float.NaN;
     private int loinDepuis;
     private int ailleursDepuis;
-    // L'orange seulement
+    // Jaune seulement : son bâton de commande
     private final Map<String, Long> dernieresCommandes = new HashMap<>();
     private long derniereCommande = -100000;
     private @Nullable String commandeEnAttente;
-    /** Un message demandé pendant qu'il tapait une commande : il l'écrira juste après. */
-    private @Nullable UUID lecteurEnAttente;
-    private String evenementEnAttente = "";
     private int momentCommande;
+    // L'orange seulement : ses messages
     private long prochaineParole = -1;
     private long derniereVictoire;
     private int accueilA = -1;
@@ -374,13 +372,6 @@ public class Stickman extends PathfinderMob {
             }
             commandeEnAttente = null;
         }
-        if (lecteurEnAttente != null && commandeEnAttente == null && geste != Geste.COMMANDE) {
-            ServerPlayer lecteur = niveau.getServer().getPlayerList().getPlayer(lecteurEnAttente);
-            lecteurEnAttente = null;
-            if (lecteur != null) {
-                ecrire(lecteur, evenementEnAttente);
-            }
-        }
         if (galerie || !isAlive()) {
             return;
         }
@@ -409,6 +400,9 @@ public class Stickman extends PathfinderMob {
         ailleursDepuis = 0;
         if (tickCount % 5 == 0) {
             saluerSiRegarde(p);
+        }
+        if (personnage.aLeBaton()) {
+            tickBaton(niveau, p);
         }
         if (personnage.estOrange()) {
             tickOrange(niveau, p);
@@ -466,12 +460,12 @@ public class Stickman extends PathfinderMob {
         return libre ? place : p.position();
     }
 
-    /** Trop loin : une perle de l'End (ou, pour l'orange, la commande /tp s'il en a le droit). */
+    /** Trop loin : une perle de l'End (ou, pour Jaune, la commande /tp s'il en a le droit). */
     public void rejoindre(ServerPlayer p) {
         if (!(level() instanceof ServerLevel niveau) || p.level() != niveau) {
             return;
         }
-        if (personnage.estOrange() && Commandes.permises(p) && commandeEnAttente == null && geste != Geste.COMMANDE) {
+        if (personnage.aLeBaton() && Commandes.permises(p) && commandeEnAttente == null && geste != Geste.COMMANDE) {
             taperCommande("/tp @s " + p.getName().getString(), true);
             return;
         }
@@ -748,6 +742,47 @@ public class Stickman extends PathfinderMob {
         return choix[random.nextInt(choix.length)];
     }
 
+    // ------------------------------------------------------------------ Jaune et son bâton de commande
+
+    private void tickBaton(ServerLevel niveau, ServerPlayer p) {
+        if (!libre() || commandeEnAttente != null || geste == Geste.COMMANDE || tickCount % 10 != 0 || !Commandes.permises(p)) {
+            return;
+        }
+        long t = niveau.getGameTime();
+        Commandes.Choix choix = Commandes.choisir(this, p, niveau, dernieresCommandes, derniereCommande, t);
+        if (choix != null) {
+            dernieresCommandes.put(choix.cle(), t);
+            derniereCommande = t;
+            taperCommande(choix.texte(), choix.urgent());
+        }
+    }
+
+    /** Jaune lève son bâton et tape la commande ; elle part quand la dernière lettre est tapée. */
+    public void taperCommande(String texte, boolean urgent) {
+        int lever = urgent ? LEVER_URGENT : LEVER;
+        int frappe = Mth.ceil(texte.length() / (urgent ? FRAPPE_URGENTE : FRAPPE));
+        entityData.set(DATA_COMMANDE, (urgent ? MARQUE_URGENTE : "") + texte);
+        jouer(Geste.COMMANDE, lever + frappe + (urgent ? TENUE_URGENTE : TENUE));
+        commandeEnAttente = texte;
+        momentCommande = tickCount + lever + frappe;
+        playSound(SoundEvents.ENCHANTMENT_TABLE_USE, 0.8f, 1.3f);
+    }
+
+    private void executer(ServerLevel niveau, ServerPlayer p, String texte) {
+        if (!Commandes.permises(p) || !isAlive()) {
+            return;     // les commandes ont été coupées entre-temps
+        }
+        CommandSourceStack source = createCommandSourceStackForNameResolution(niveau)
+                .withPermission(LevelBasedPermissionSet.GAMEMASTER)
+                .withSuppressedOutput();
+        niveau.getServer().getCommands().performPrefixedCommand(source, texte);
+        niveau.sendParticles(ParticleTypes.ELECTRIC_SPARK, getX(), getY() + 2.2, getZ(), 24, 0.25, 0.25, 0.25, 0.4);
+        niveau.sendParticles(ParticleTypes.ENCHANT, getX(), getY() + 2.2, getZ(), 30, 0.4, 0.4, 0.4, 0.8);
+        niveau.playSound(null, getX(), getY(), getZ(), SoundEvents.AMETHYST_BLOCK_CHIME, getSoundSource(), 1f, 1.4f);
+        p.sendSystemMessage(Component.translatable("message.abstickmen.commande", getDisplayName(), texte)
+                .withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC));
+    }
+
     // ------------------------------------------------------------------ l'orange
 
     private void tickOrange(ServerLevel niveau, ServerPlayer p) {
@@ -755,19 +790,7 @@ public class Stickman extends PathfinderMob {
         if (prochaineParole < 0) {
             prochaineParole = t + 2400 + random.nextInt(3600);
         }
-        if (!libre() || commandeEnAttente != null || geste == Geste.COMMANDE || geste == Geste.ECRIRE) {
-            return;
-        }
-        if (tickCount % 10 == 0 && Commandes.permises(p)) {
-            Commandes.Choix choix = Commandes.choisir(this, p, niveau, dernieresCommandes, derniereCommande, t);
-            if (choix != null) {
-                dernieresCommandes.put(choix.cle(), t);
-                derniereCommande = t;
-                taperCommande(choix.texte(), choix.urgent());
-                return;
-            }
-        }
-        if (!Reglages.get().ecrire || tickCount % 20 != 0 || getTarget() != null) {
+        if (!libre() || geste == Geste.ECRIRE || !Reglages.get().ecrire || tickCount % 20 != 0 || getTarget() != null) {
             return;
         }
         // Des messages de circonstance
@@ -799,40 +822,9 @@ public class Stickman extends PathfinderMob {
         return niveau.getEntitiesOfClass(Mob.class, p.getBoundingBox().inflate(14), m -> m instanceof Enemy && m.isAlive()).isEmpty();
     }
 
-    /** L'orange lève son bâton et tape la commande ; elle part quand la dernière lettre est tapée. */
-    public void taperCommande(String texte, boolean urgent) {
-        int lever = urgent ? LEVER_URGENT : LEVER;
-        int frappe = Mth.ceil(texte.length() / (urgent ? FRAPPE_URGENTE : FRAPPE));
-        entityData.set(DATA_COMMANDE, (urgent ? MARQUE_URGENTE : "") + texte);
-        jouer(Geste.COMMANDE, lever + frappe + (urgent ? TENUE_URGENTE : TENUE));
-        commandeEnAttente = texte;
-        momentCommande = tickCount + lever + frappe;
-        playSound(SoundEvents.ENCHANTMENT_TABLE_USE, 0.8f, 1.3f);
-    }
-
-    private void executer(ServerLevel niveau, ServerPlayer p, String texte) {
-        if (!Commandes.permises(p) || !isAlive()) {
-            return;     // les commandes ont été coupées entre-temps
-        }
-        CommandSourceStack source = createCommandSourceStackForNameResolution(niveau)
-                .withPermission(LevelBasedPermissionSet.GAMEMASTER)
-                .withSuppressedOutput();
-        niveau.getServer().getCommands().performPrefixedCommand(source, texte);
-        niveau.sendParticles(ParticleTypes.ELECTRIC_SPARK, getX(), getY() + 2.2, getZ(), 24, 0.25, 0.25, 0.25, 0.4);
-        niveau.sendParticles(ParticleTypes.ENCHANT, getX(), getY() + 2.2, getZ(), 30, 0.4, 0.4, 0.4, 0.8);
-        niveau.playSound(null, getX(), getY(), getZ(), SoundEvents.AMETHYST_BLOCK_CHIME, getSoundSource(), 1f, 1.4f);
-        p.sendSystemMessage(Component.translatable("message.abstickmen.commande", getDisplayName(), texte)
-                .withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC));
-    }
-
     /** L'orange écrit une phrase (toujours nouvelle) sur l'écran du joueur, avec son doigt. */
     public boolean ecrire(ServerPlayer lecteur, String evenement) {
         if (!personnage.estOrange() || !(level() instanceof ServerLevel niveau)) {
-            return false;
-        }
-        if (commandeEnAttente != null || geste == Geste.COMMANDE) {
-            lecteurEnAttente = lecteur.getUUID();
-            evenementEnAttente = evenement;
             return false;
         }
         String texte = Paroles.composer(contexte(niveau, lecteur, evenement), random);
@@ -1060,7 +1052,7 @@ public class Stickman extends PathfinderMob {
             setYBodyRot(vers);
             if (lacher >= 0) {
                 if (geste != Geste.TIR_A_L_ARC) {
-                    lacher = -1;        // interrompu (l'orange tape une commande urgente, par exemple)
+                    lacher = -1;        // interrompu (Jaune tape une commande urgente, par exemple)
                     stopUsingItem();
                 } else if (tickCount >= lacher) {
                     tirer(niveau, c);
@@ -1574,7 +1566,7 @@ public class Stickman extends PathfinderMob {
         @Override
         public boolean canContinueToUse() {
             LivingEntity c = mob.getTarget();
-            // Un creeper arrivé trop près : on le laisse (à l'orange et à ses commandes)
+            // Un creeper arrivé trop près : on le laisse (à Jaune et à ses commandes)
             if (c == null || c instanceof Creeper && distanceToSqr(c) < CREEPER_TROP_PRES * CREEPER_TROP_PRES) {
                 return false;
             }

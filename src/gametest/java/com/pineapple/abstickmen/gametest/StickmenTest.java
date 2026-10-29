@@ -27,7 +27,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Dessine vraiment la bande avec le crayon (clic droit), puis photographie chaque mouvement, un
- * combat, le minage, une commande de l'orange et un message écrit à l'écran.
+ * combat, le minage, une commande de Jaune et un message que l'orange écrit à l'écran.
  *
  *   ./gradlew runClientGameTest                 tout
  *   ./gradlew runClientGameTest -Pscenes=gestes seulement certaines scènes (gestes, angles, combat, minage, commande)
@@ -184,21 +184,22 @@ public class StickmenTest implements FabricClientGameTest {
         run("tp @p -4.4 -59.3 6.2 -135 10");
         context.waitTicks(10);
         context.takeScreenshot("24-orange-de-trois-quarts");
-        surOrange(o -> o.taperCommande("/weather clear", false));
-        run("tp @p -2.7 -59.4 2.0 0 -2");
+        // Jaune, le dernier de la ligne (x = 3.7), tape une commande avec son bâton
+        surJaune(j -> j.taperCommande("/weather clear", false));
+        run("tp @p 3.7 -59.4 2.0 0 -2");
         context.waitTicks(30);
-        context.takeScreenshot("25-orange-commande-de-pres");
+        context.takeScreenshot("25-jaune-commande-de-pres");
         context.waitTicks(40);
         context.runOnClient(mc -> mc.gui.hud.toggle());
     }
 
-    /** L'orange tape une commande avec son bâton, puis écrit un message sur l'écran. */
+    /** Jaune tape une commande avec son bâton, puis l'orange écrit un message sur l'écran. */
     private void commandeEtMessage() {
         ranger(4.5);
         run("tp @p 0.5 -59.4 -1.2 0 6");
         run("time set 18000");
         context.waitTicks(10);
-        surOrange(o -> o.taperCommande("/time set day", false));
+        surJaune(j -> j.taperCommande("/time set day", false));
         context.waitTicks(16);
         context.takeScreenshot("30-commande-tapee");
         context.waitTicks(14);
@@ -319,6 +320,8 @@ public class StickmenTest implements FabricClientGameTest {
     /** Des zombies momifiés et un creeper arrivent de loin : la bande doit les abattre à l'arc, sans toucher le joueur. */
     private void arc() {
         server.runOnServer(s -> Stickman.galerie = false);
+        // Le mur de la scène du minage leur cacherait les monstres
+        run("fill -3 -60 6 3 -57 7 air");
         run("tp @p 0.5 -60 0.5 0 10");
         context.waitTicks(40);
         run("summon husk 6.5 -60 24.5");
@@ -392,6 +395,10 @@ public class StickmenTest implements FabricClientGameTest {
 
     private void surOrange(Consumer<Stickman> action) {
         server.runOnServer(s -> bande(s).stream().filter(st -> st.personnage == Personnage.ORANGE).forEach(action));
+    }
+
+    private void surJaune(Consumer<Stickman> action) {
+        server.runOnServer(s -> bande(s).stream().filter(st -> st.personnage == Personnage.JAUNE).forEach(action));
     }
 
     private static List<Stickman> bande(MinecraftServer s) {

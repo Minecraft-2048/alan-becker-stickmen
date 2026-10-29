@@ -44,7 +44,7 @@ public enum Geste {
     LANCER(12, false, Famille.TRAVAIL, "lancer", "throw"),
     PERLE(12, false, Famille.TRAVAIL, "lancer de perle", "pearl throw"),
 
-    // L'orange seulement (durées calculées d'après le texte)
+    // Jaune (commande) et l'orange (message) seulement ; durées calculées d'après le texte
     COMMANDE(0, false, Famille.SPECIAL, "commande", "command"),
     ECRIRE(0, false, Famille.SPECIAL, "message", "message");
 

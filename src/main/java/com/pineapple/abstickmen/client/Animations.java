@@ -29,7 +29,7 @@ public final class Animations {
             }
         }
 
-        if (s.personnage.estOrange() && !s.assis) {
+        if (s.personnage.aLeBaton() && !s.assis) {
             // Le bras qui tient le bâton reste écarté et balance peu
             p.epaule[1] *= 0.35f;
             p.ecartBras[1] = Math.max(p.ecartBras[1], 0.45f);
@@ -526,7 +526,7 @@ public final class Animations {
         }
     }
 
-    /** L'orange lève son bâton (main gauche) et tape la commande de l'autre main, dans le vide. */
+    /** Jaune lève son bâton (main gauche) et tape la commande de l'autre main, dans le vide. */
     private static void commande(Pose q, float t, int d, StickmanRenderState s) {
         int lever = s.commandeUrgente ? Stickman.LEVER_URGENT : Stickman.LEVER;
         float frappe = s.commande.length() / (s.commandeUrgente ? Stickman.FRAPPE_URGENTE : Stickman.FRAPPE);
@@ -546,7 +546,7 @@ public final class Animations {
      * Tir à l'arc : l'arc dans la main gauche, bras tendu vers la cible ; la main droite tire la corde
      * jusqu'à la joue, coude en arrière, et part en arrière quand la flèche est lâchée. Les deux bras
      * restent à l'horizontale : leur écart les fait alors tourner à plat, de l'avant vers le côté puis
-     * vers l'arrière. L'orange plante son bâton à côté de lui le temps du tir.
+     * vers l'arrière. Jaune plante son bâton à côté de lui le temps du tir.
      */
     private static void tirALArc(Pose q, float t, int d) {
         float tension = lisse((t - 3) / 15f);

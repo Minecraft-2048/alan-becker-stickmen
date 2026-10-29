@@ -24,7 +24,7 @@ public final class Pose {
     public float tourAvant, tourCote, tourVertical;
     /** Hauteur au-dessus du sol (sauts), décalage vers l'avant. */
     public float air, avance;
-    /** Le bâton de l'orange : 0 = tenu comme un bâton de marche, 1 = levé dans l'axe du bras. */
+    /** Le bâton de Jaune : 0 = tenu comme un bâton de marche, 1 = levé dans l'axe du bras. */
     public float batonLeve;
     /** 1 = le bâton planté dans le sol à côté de lui (il a besoin de ses deux mains pour tirer à l'arc). */
     public float batonPlante;

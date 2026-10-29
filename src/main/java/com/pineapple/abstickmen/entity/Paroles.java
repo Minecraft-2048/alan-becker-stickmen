@@ -69,7 +69,7 @@ public final class Paroles {
                 debuts.addAll(List.of("Coucou " + j + " !", "Me voilà !", "Merci de m'avoir dessiné, " + j + " !",
                         "Salut " + j + ", toute la bande est là !", "Ça y est, je suis entier !",
                         "Un coup de crayon et hop, me voilà !", "Bonjour " + j + " !", "Tadaaa !"));
-                principales.addAll(List.of("on va bien s'amuser", "je garde mon bâton à portée de main", "les autres sont prêts aussi",
+                principales.addAll(List.of("on va bien s'amuser", "Jaune garde son bâton à portée de main", "les autres sont prêts aussi",
                         "tu nous fais visiter ton monde", "on te suit partout", "j'ai encore l'encre toute fraîche",
                         "on va t'aider à miner et à te battre", "personne n'embête notre ami " + j));
             }
@@ -87,7 +87,7 @@ public final class Paroles {
             case "diamants" -> debuts.addAll(List.of("Regarde ça !", "Incroyable !", "Des diamants !", "Waouh !", "Jackpot !"));
             case "nuit" -> {
                 debuts.addAll(List.of("La nuit tombe.", "Il fait noir…", "Bonsoir " + j + ".", "Hou hou…"));
-                principales.addAll(List.of("les monstres vont sortir", "reste près de nous", "je tiens mon bâton prêt",
+                principales.addAll(List.of("les monstres vont sortir", "reste près de nous", "Jaune tient son bâton prêt",
                         "on monte la garde", "un lit, ce serait pas mal", "allume des torches"));
             }
             case "clic" -> debuts.addAll(List.of("Oui " + j + " ?", "Tu m'as appelé ?", "Hé " + j + " !", "Me voilà !",
@@ -151,7 +151,7 @@ public final class Paroles {
                         "la nuit, on reste groupés"));
             }
             if (c.orage) {
-                idees.addAll(List.of("quel orage !", "j'ai peur de la foudre… sauf quand c'est moi qui la fais tomber"));
+                idees.addAll(List.of("quel orage !", "j'ai peur de la foudre… sauf quand c'est Jaune qui la fait tomber avec son bâton"));
             } else if (c.pluie) {
                 idees.addAll(List.of("il pleut des cordes", "j'adore le bruit de la pluie", "la pluie efface presque mes traits"));
             }
@@ -172,8 +172,8 @@ public final class Paroles {
                     "Rouge veut toujours se battre en premier"));
         }
         if (c.commandesPermises) {
-            idees.addAll(List.of("mon bâton de commande est prêt", "les commandes sont activées, ça m'arrange",
-                    "si tu as besoin, je tape une commande"));
+            idees.addAll(List.of("le bâton de commande de Jaune est prêt", "les commandes sont activées, Jaune est ravi",
+                    "si tu as besoin, Jaune tape une commande"));
         }
         idees.addAll(List.of("je suis fait de cinq traits et d'un cercle", "ma tête est creuse, mais pas vide",
                 "j'écris avec mon doigt, c'est plus rapide", "j'adore ce monde en cubes", "un jour je ferai un salto quadruple",
@@ -287,7 +287,7 @@ public final class Paroles {
             case "arrivee" -> {
                 debuts.addAll(List.of("Hi " + j + "!", "Here I am!", "Thanks for drawing me, " + j + "!",
                         "Hey " + j + ", the whole gang is here!", "Done, I'm all drawn!", "Tadaaa!"));
-                principales.addAll(List.of("this is going to be fun", "my staff is ready", "the others are ready too",
+                principales.addAll(List.of("this is going to be fun", "Yellow's staff is ready", "the others are ready too",
                         "show us your world", "we'll follow you everywhere", "my ink is still wet"));
             }
             case "victoire" -> debuts.addAll(List.of("There you go!", "Too easy!", "Nice teamwork!", "Victory!", "Got them!", "Phew!"));
@@ -300,7 +300,7 @@ public final class Paroles {
             case "diamants" -> debuts.addAll(List.of("Look at that!", "Amazing!", "Diamonds!", "Wow!", "Jackpot!"));
             case "nuit" -> {
                 debuts.addAll(List.of("Night is falling.", "It's getting dark…", "Good evening " + j + "."));
-                principales.addAll(List.of("the monsters are coming out", "stay close to us", "my staff is ready", "we're on guard"));
+                principales.addAll(List.of("the monsters are coming out", "stay close to us", "Yellow has his staff ready", "we're on guard"));
             }
             case "clic" -> debuts.addAll(List.of("Yes " + j + "?", "You called?", "Hey " + j + "!", "Here I am!",
                     "Psst, " + j + "…", "Guess what?", "Listen:", "Hmm…"));
@@ -342,7 +342,7 @@ public final class Paroles {
         if (c.faim < 10) idees.add("your stomach is growling");
         if (c.amis > 0) idees.addAll(List.of("there are " + (c.amis + 1) + " of us protecting you", "Red and Blue are racing again",
                 "Yellow dances whenever we look away"));
-        if (c.commandesPermises) idees.addAll(List.of("my command staff is ready", "commands are on, good for me"));
+        if (c.commandesPermises) idees.addAll(List.of("Yellow's command staff is ready", "commands are on, Yellow is happy"));
         idees.addAll(List.of("I'm made of five lines and a circle", "my head is hollow, not empty", "I write with my finger",
                 "I love this blocky world", "one day I'll do a quadruple flip", "what are you building today?",
                 "we make a good team", "this world is way bigger than my desktop"));

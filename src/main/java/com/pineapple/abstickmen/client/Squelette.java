@@ -15,7 +15,7 @@ public final class Squelette {
     public static final float RAYON_TETE = 0.21f;
     /** Épaisseur des traits. */
     public static final float EPAISSEUR = 0.075f;
-    /** Longueur du bâton de l'orange. */
+    /** Longueur du bâton de Jaune. */
     public static final float BATON = 1.2f;
 
     public final Vector3f hanche = new Vector3f(), cou = new Vector3f(), tete = new Vector3f();
@@ -74,7 +74,7 @@ public final class Squelette {
             pieds[i].set(v).mul(TIBIA).add(genoux[i]);
         }
 
-        // Le bâton de l'orange, dans sa main gauche : debout comme un bâton de marche, ou levé dans l'axe du bras
+        // Le bâton de Jaune, dans sa main gauche : debout comme un bâton de marche, ou levé dans l'axe du bras
         float leve = p.batonLeve;
         v.set(0.14f, 0.97f, 0.1f);
         axeBaton.set(v).lerp(axeAvantBras[1], leve).normalize();

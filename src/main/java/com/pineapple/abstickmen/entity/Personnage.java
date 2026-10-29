@@ -1,15 +1,16 @@
 package com.pineapple.abstickmen.entity;
 
 /**
- * Les cinq bonshommes-bâtons. Seul l'orange a la tête creuse (un simple anneau), le bâton surmonté
- * d'un bloc de commande, et sait écrire sur l'écran du joueur. Chacun a sa façon de se battre.
+ * Les cinq bonshommes-bâtons. Seul l'orange a la tête creuse (un simple anneau) et sait écrire sur
+ * l'écran du joueur ; Jaune a le bâton surmonté d'un bloc de commande, comme dans la série. Chacun a
+ * sa façon de se battre.
  */
 public enum Personnage {
-    ORANGE("orange", 0xFF8A1A, true, Style.BATON),
+    ORANGE("orange", 0xFF8A1A, true, Style.HACHE),
     ROUGE("red", 0xE53935, false, Style.POINGS),
     BLEU("blue", 0x1E88E5, false, Style.PIEDS),
     VERT("green", 0x43A047, false, Style.EPEE),
-    JAUNE("yellow", 0xFDD835, false, Style.HACHE);
+    JAUNE("yellow", 0xFDD835, false, Style.BATON);
 
     /** Comment il se bat : ce qu'il tient en main et quels coups il donne. */
     public enum Style { BATON, POINGS, PIEDS, EPEE, HACHE }
@@ -29,6 +30,11 @@ public enum Personnage {
 
     public boolean estOrange() {
         return this == ORANGE;
+    }
+
+    /** Le bâton de commande (Jaune) : toujours dans sa main gauche, il s'en sert pour se battre et pour taper des commandes. */
+    public boolean aLeBaton() {
+        return style == Style.BATON;
     }
 
     /** Sa place autour du joueur quand il le suit : angle par rapport au dos du joueur, et distance. */

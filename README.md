@@ -2,8 +2,8 @@
 
 Orange, Rouge, Bleu, Vert et Jaune, les bonshommes-bâtons des animations d'Alan Becker, débarquent
 dans Minecraft : ils te suivent partout, font des acrobaties, se battent contre les monstres et
-minent pour toi. Orange a la **tête creuse**, un **bâton surmonté d'un bloc de commande**… et il
-t'**écrit des messages sur l'écran**.
+minent pour toi. Orange a la **tête creuse** et t'**écrit des messages sur l'écran** ; comme dans
+la série, Jaune a son **bâton surmonté d'un bloc de commande**.
 
 Minecraft **Fabric 26.3** · Fabric API · Java 25 · projet de fan non officiel
 
@@ -15,7 +15,7 @@ Minecraft **Fabric 26.3** · Fabric API · Java 25 · projet de fan non officiel
 
 ## Installation
 
-1. Mets `abstickmen-26.3-1.1.0.jar` (onglet **Releases**) et **Fabric API** dans le dossier `mods`.
+1. Mets `abstickmen-26.3-1.2.0.jar` (onglet **Releases**) et **Fabric API** dans le dossier `mods`.
 2. Lance le jeu en Fabric 26.3. Avec Iris et un pack de shaders, les stickmen sont dessinés en relief ;
    sans shaders, ce sont des traits plats, comme dans les animations.
 
@@ -40,13 +40,13 @@ aussi son œuf d'apparition.
 - **Ils te suivent** en formation derrière toi. Trop loin, ils te rejoignent d'une perle de l'End ;
   ils te suivent aussi dans le Nether et dans l'End.
 - **Ils se battent** contre les monstres qui s'approchent de toi, qui te frappent ou que tu frappes :
-  Rouge aux poings, Bleu aux pieds (coups de pied sautés et retournés), Vert à l'épée, Jaune à la
-  hache, Orange au bâton.
+  Rouge aux poings, Bleu aux pieds (coups de pied sautés et retournés), Vert à l'épée, Orange à la
+  hache, Jaune au bâton.
 - **Ils tirent à l'arc** sur les monstres qui arrivent de loin (jusqu'à 28 blocs), creepers compris :
   ils s'arrêtent, bandent l'arc et visent en tenant compte de la chute de la flèche et de la marche du
   monstre. Leurs flèches traversent le joueur, les stickmen, les animaux et les villageois. Quand le
   monstre arrive à moins de 5 blocs, ils passent au corps à corps ; un creeper arrivé à moins de 4
-  blocs, ils le laissent à Orange. Orange plante son bâton dans le sol le temps de tirer.
+  blocs, ils le laissent à Jaune et à ses commandes. Jaune plante son bâton dans le sol le temps de tirer.
 - **Ils minent** les minerais visibles autour de toi avec une pioche en fer, puis te rapportent et
   te lancent le butin.
 - **Ils font des acrobaties** quand tout est calme : salto avant et arrière, roue, poirier, pompes,
@@ -68,9 +68,20 @@ aussi son œuf d'apparition.
 
 ![La tête creuse d'Orange](docs/tete-creuse.jpg)
 
-**Son bâton de commande** : si les commandes sont activées pour toi (monde avec la triche activée,
-ou opérateur sur un serveur), il lève son bâton et tape une commande quand ça sert. Elle s'écrit en
-l'air au-dessus de lui, puis apparaît dans ton chat.
+**Il t'écrit des messages sur l'écran** avec son doigt, lettre après lettre, au-dessus de lui : quand
+il arrive, quand tu cliques sur lui, après une victoire, à la tombée de la nuit, quand tu es en
+danger, quand la bande trouve des diamants, et de temps en temps. Chaque phrase est composée sur le
+moment à partir de ce qui se passe, dans ta langue (français ou anglais), et **n'est jamais écrite
+deux fois**.
+
+![Un message d'Orange](docs/message.jpg)
+
+## Jaune et son bâton de commande
+
+Comme dans la série, **Jaune a un bâton surmonté d'un bloc de commande**. Si les commandes sont
+activées pour toi (monde avec la triche activée, ou opérateur sur un serveur), il lève son bâton et
+tape une commande quand ça sert. Elle s'écrit en l'air au-dessus de lui, puis apparaît dans ton chat.
+Il se bat aussi avec son bâton, et le plante dans le sol quand il tire à l'arc.
 
 | Quand | Ce qu'il tape |
 |---|---|
@@ -86,15 +97,7 @@ l'air au-dessus de lui, puis apparaît dans ton chat.
 | tu es au fond d'une grotte, dans le noir | `/give <toi> torch 16`, puis la vision nocturne |
 | tu mines beaucoup | `/effect give <toi> haste 60 1` |
 
-![Orange tape une commande](docs/commande.jpg)
-
-**Il t'écrit des messages sur l'écran** avec son doigt, lettre après lettre, au-dessus de lui : quand
-il arrive, quand tu cliques sur lui, après une victoire, à la tombée de la nuit, quand tu es en
-danger, quand la bande trouve des diamants, et de temps en temps. Chaque phrase est composée sur le
-moment à partir de ce qui se passe, dans ta langue (français ou anglais), et **n'est jamais écrite
-deux fois**.
-
-![Un message d'Orange](docs/message.jpg)
+![Jaune tape une commande](docs/commande.jpg)
 
 ## Réglages
 
@@ -136,8 +139,8 @@ sont dessinées par `outils/textures.py`.
 Orange, Red, Blue, Green and Yellow, the stick figures from Alan Becker's animations, come to
 Minecraft (Fabric 26.3). They follow you, do flips and dances, fight monsters, shoot arrows at the ones
 coming from afar (creepers included; their arrows go through you and your pets) and mine ores for you.
-Orange has a hollow head that always faces you, a command staff he uses when commands are enabled
-(slow falling when you fall, fire resistance in lava, `/time set day` when monsters come at night…),
-and he writes messages on your screen, a new one every time. Craft the **Animator's Pencil** (stick,
+Orange has a hollow head that always faces you and writes messages on your screen, a new one every
+time. Like in the show, Yellow has the command staff: he uses it when commands are enabled (slow
+falling when you fall, fire resistance in lava, `/time set day` when monsters come at night…). Craft the **Animator's Pencil** (stick,
 coal and paper) and right-click to draw them; sneak and right-click to erase them. With Iris shaders
 they are drawn in 3D, otherwise as flat strokes. Unofficial fan project, not affiliated with Alan Becker.

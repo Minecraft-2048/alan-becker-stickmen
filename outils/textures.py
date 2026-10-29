@@ -93,7 +93,7 @@ for k in range(0, taille, 16):
     d.line([(0, k), (taille, k)], fill=(222, 228, 240, 255), width=1)
 e = 7
 for n, (nom, c) in enumerate(COULEURS.items()):
-    x = 26 + n * 51
+    x = 24 + n * 47
     sol = 230
     hanche = sol - 64
     cou = hanche - 56
@@ -114,9 +114,11 @@ for n, (nom, c) in enumerate(COULEURS.items()):
     r = 21
     if nom == "orange":
         d.ellipse([x - r, tete - r, x + r, tete + r], outline=col, width=e)
-        d.line([(x + 30, sol), (x + 30, cou - 40)], fill=(110, 75, 42), width=5)
-        d.rectangle([x + 22, cou - 58, x + 38, cou - 42], fill=(200, 125, 60), outline=(90, 60, 40), width=2)
     else:
         d.ellipse([x - r, tete - r, x + r, tete + r], fill=col)
+    if nom == "yellow":
+        # Le bâton de commande de Jaune, comme dans la série
+        d.line([(x + 28, sol), (x + 28, cou - 40)], fill=(110, 75, 42), width=5)
+        d.rectangle([x + 20, cou - 58, x + 36, cou - 42], fill=(200, 125, 60), outline=(90, 60, 40), width=2)
 icone.resize((128, 128), Image.LANCZOS).save(racine / "icon.png")
 print("ok")

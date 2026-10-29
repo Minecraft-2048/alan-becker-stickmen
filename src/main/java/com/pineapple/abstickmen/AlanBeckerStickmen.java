@@ -33,8 +33,8 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Les stickmen d'Alan Becker dans Minecraft (projet de fan, non officiel) : Orange, Rouge, Bleu,
- * Vert et Jaune suivent le joueur, l'aident à se battre et à miner. Orange a la tête creuse, un
- * bâton de commande et écrit des messages sur l'écran.
+ * Vert et Jaune suivent le joueur, l'aident à se battre et à miner. Orange a la tête creuse et écrit
+ * des messages sur l'écran ; Jaune a son bâton de commande, comme dans la série.
  */
 public final class AlanBeckerStickmen implements ModInitializer {
     public static final String MOD_ID = "abstickmen";
@@ -88,7 +88,7 @@ public final class AlanBeckerStickmen implements ModInitializer {
 
         ServerLifecycleEvents.SERVER_STARTING.register(serveur -> Reglages.charger());
         ServerLifecycleEvents.SERVER_STOPPED.register(serveur -> Souvenirs.oublierTout());
-        // L'orange remarque quand le joueur mine beaucoup (il lui tape alors /effect … haste)
+        // Jaune remarque quand le joueur mine beaucoup (il lui tape alors /effect … haste)
         PlayerBlockBreakEvents.AFTER.register((niveau, joueur, pos, etat, entite) ->
                 Souvenirs.de(joueur.getUUID()).blocCasseParLeJoueur(niveau.getGameTime()));
     }

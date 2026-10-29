@@ -6,6 +6,7 @@ import java.util.function.Consumer;
 
 import com.pineapple.abstickmen.entity.Geste;
 import com.pineapple.abstickmen.entity.Personnage;
+import com.pineapple.abstickmen.entity.Reglages;
 import com.pineapple.abstickmen.entity.Stickman;
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest;
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext;
@@ -173,14 +174,16 @@ public class PhotosTest implements FabricClientGameTest {
         context.waitTicks(80);
     }
 
-    /** L'orange lève son bâton au coucher du soleil et tape /time set day. */
+    /** Jaune lève son bâton au coucher du soleil et tape /time set day. */
     private void commande() {
         ranger(5.0);
-        sur(Personnage.ORANGE, s -> placer(s, x0 + 0.5, z0 + 3.0, 180));
+        // Jaune passe devant, l'orange prend sa place au bout du V
+        sur(Personnage.JAUNE, s -> placer(s, x0 + 0.5, z0 + 3.0, 180));
+        sur(Personnage.ORANGE, s -> placer(s, x0 + 3.3, z0 + 6.8, 180));
         run("time set 11600");
         regarder(x0 + 2.1, y0, z0 - 0.1, x0 + 0.5, y0 + 1.5, z0 + 3.0);
         context.waitTicks(20);
-        sur(Personnage.ORANGE, s -> s.taperCommande("/time set day", false));
+        sur(Personnage.JAUNE, s -> s.taperCommande("/time set day", false));
         context.waitTicks(17);
         photo("05-commande");
         cacherHud(false);
@@ -203,10 +206,13 @@ public class PhotosTest implements FabricClientGameTest {
         context.waitTicks(30);
     }
 
-    /** Des zombies momifiés arrivent : la bande les arrête. */
+    /** Des zombies momifiés arrivent : la bande les arrête au corps à corps. */
     private void combat() {
         run("time set 11000");
         run(f("tp @p %.1f %d %.1f 0 6", x0 + 0.5, y0, z0 + 0.5));
+        // Arcs rangés le temps de la photo : sinon ils tirent de derrière la caméra et n'y apparaissent pas
+        boolean arc = server.computeOnServer(s -> Reglages.get().arc);
+        server.runOnServer(s -> Reglages.get().arc = false);
         server.runOnServer(s -> Stickman.galerie = false);
         context.waitTicks(40);
         for (int[] p : new int[][]{{-2, 13}, {3, 13}, {0, 15}, {5, 11}}) {
@@ -221,6 +227,7 @@ public class PhotosTest implements FabricClientGameTest {
         context.waitTicks(12);
         photo("08-combat-d");
         context.waitTicks(200);
+        server.runOnServer(s -> Reglages.get().arc = arc);
     }
 
     /** Des zombies momifiés arrivent de loin : la bande les accueille à l'arc (vue de trois quarts arrière). */
